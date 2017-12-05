@@ -9,8 +9,7 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	runewidth "github.com/mattn/go-runewidth"
-	"github.com/olekukonko/tablewriter"
+	"github.com/jroimartin/gocui"
 )
 
 type repository struct {
@@ -19,16 +18,7 @@ type repository struct {
 	desc string
 }
 
-func (r *repository) toArray() []string {
-	return []string{
-		r.name,
-		runewidth.Truncate(r.desc, 80, "..."),
-	}
-}
-
-func (r *repository) url() string {
-	return "https://github.com/" + r.name
-}
+var repos []repository
 
 func main() {
 	os.Exit(run(os.Args, os.Stdout, os.Stderr))
@@ -52,18 +42,37 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	}
 
 	var repo repository
-	table := tablewriter.NewWriter(outStream)
-	table.SetColMinWidth(1, 100)
 
 	doc.Find("ol.repo-list li").Each(func(i int, s *goquery.Selection) {
 		name := strings.TrimSpace(s.Find("h3").Text())
 		repo.name = strings.Replace(name, " ", "", -1)
 		repo.desc = strings.TrimSpace(s.Find(".py-1").Text())
 		repo.lang = s.Find("[itemprop=programmingLanguage]").Text()
-
-		table.Append(repo.toArray())
+		repos = append(repos, repo)
 	})
 
-	table.Render()
+	g, err := gocui.NewGui(gocui.OutputNormal)
+	if err != nil {
+		fmt.Fprintf(errStream, "GUI create error: %v\n", err)
+		exitCode = 1
+		return
+	}
+	defer g.Close()
+
+	g.Cursor = true
+	g.SetManagerFunc(layout)
+
+	if err := keybindings(g); err != nil {
+		fmt.Fprintf(errStream, "Key bindings error: %v\n", err)
+		exitCode = 1
+		return
+	}
+
+	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
+		fmt.Fprintf(errStream, "Unexpected error: %v\n", err)
+		exitCode = 1
+		return
+	}
+
 	return
 }
