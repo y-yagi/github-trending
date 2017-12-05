@@ -33,23 +33,11 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	flags.StringVar(&language, "l", "", "Language. Default: All")
 	flags.Parse(args[1:])
 
-	url := "https://github.com/trending/" + url.QueryEscape(language)
-	doc, err := goquery.NewDocument(url)
-	if err != nil {
-		fmt.Fprintf(errStream, "URL get error: %v\n", err)
+	if err := fetchTrending(language); err != nil {
+		fmt.Fprintf(errStream, "%v\n", err)
 		exitCode = 1
 		return
 	}
-
-	var repo repository
-
-	doc.Find("ol.repo-list li").Each(func(i int, s *goquery.Selection) {
-		name := strings.TrimSpace(s.Find("h3").Text())
-		repo.name = strings.Replace(name, " ", "", -1)
-		repo.desc = strings.TrimSpace(s.Find(".py-1").Text())
-		repo.lang = s.Find("[itemprop=programmingLanguage]").Text()
-		repos = append(repos, repo)
-	})
 
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
@@ -75,4 +63,24 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	}
 
 	return
+}
+
+func fetchTrending(language string) error {
+	url := "https://github.com/trending/" + url.QueryEscape(language)
+	doc, err := goquery.NewDocument(url)
+	if err != nil {
+		return err
+	}
+
+	var repo repository
+
+	doc.Find("ol.repo-list li").Each(func(i int, s *goquery.Selection) {
+		name := strings.TrimSpace(s.Find("h3").Text())
+		repo.name = strings.Replace(name, " ", "", -1)
+		repo.desc = strings.TrimSpace(s.Find(".py-1").Text())
+		repo.lang = s.Find("[itemprop=programmingLanguage]").Text()
+		repos = append(repos, repo)
+	})
+
+	return nil
 }
