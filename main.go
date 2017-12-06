@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jroimartin/gocui"
@@ -67,13 +68,12 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 		cfg.Languages = append(cfg.Languages, "")
 	}
 
+	var wg sync.WaitGroup
 	for _, lang := range cfg.Languages {
-		if err := fetchTrending(lang); err != nil {
-			fmt.Fprintf(errStream, "%v\n", err)
-			exitCode = 1
-			return
-		}
+		wg.Add(1)
+		go fetchTrending(lang, errStream, &wg)
 	}
+	wg.Wait()
 
 	g, err := gocui.NewGui(gocui.OutputNormal)
 	if err != nil {
@@ -101,11 +101,14 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	return
 }
 
-func fetchTrending(language string) error {
+func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	url := "https://github.com/trending/" + url.QueryEscape(language)
 	doc, err := goquery.NewDocument(url)
 	if err != nil {
-		return err
+		fmt.Fprintf(errStream, "%v\n", err)
+		return
 	}
 
 	var repo repository
@@ -126,7 +129,7 @@ func fetchTrending(language string) error {
 
 	reposPerLang[key] = repos
 
-	return nil
+	return
 }
 
 func keybindings(g *gocui.Gui) error {
