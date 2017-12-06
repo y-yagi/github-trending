@@ -12,7 +12,12 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jroimartin/gocui"
+	"github.com/y-yagi/configure"
 )
+
+type config struct {
+	Languages []string `toml:"languages"`
+}
 
 type repository struct {
 	name string
@@ -27,18 +32,47 @@ func main() {
 }
 
 func run(args []string, outStream, errStream io.Writer) (exitCode int) {
-	var language string
+	var cfg config
+	var editConfig bool
 	exitCode = 0
 
 	flags := flag.NewFlagSet("github-trending", flag.ExitOnError)
 	flags.SetOutput(errStream)
-	flags.StringVar(&language, "l", "", "Language. Default: All")
+	flags.BoolVar(&editConfig, "c", false, "configure")
 	flags.Parse(args[1:])
 
-	if err := fetchTrending(language); err != nil {
+	err := configure.Load("github-trending", &cfg)
+	if err != nil {
 		fmt.Fprintf(errStream, "%v\n", err)
 		exitCode = 1
 		return
+	}
+
+	if editConfig {
+		editor := os.Getenv("EDITOR")
+		if len(editor) == 0 {
+			editor = "vim"
+		}
+
+		if err := configure.Edit("github-trending", editor); err != nil {
+			fmt.Fprintf(outStream, "%v\n", err)
+			exitCode = 1
+			return
+		}
+
+		return
+	}
+
+	if len(cfg.Languages) == 0 {
+		cfg.Languages = append(cfg.Languages, "")
+	}
+
+	for _, lang := range cfg.Languages {
+		if err := fetchTrending(lang); err != nil {
+			fmt.Fprintf(errStream, "%v\n", err)
+			exitCode = 1
+			return
+		}
 	}
 
 	g, err := gocui.NewGui(gocui.OutputNormal)
@@ -118,6 +152,8 @@ func keybindings(g *gocui.Gui) error {
 }
 
 func layout(g *gocui.Gui) error {
+	var firstKey string
+
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("side", -1, -1, int(0.2*float32(maxX)), maxY); err != nil {
 		v.Title = "Language"
@@ -126,9 +162,13 @@ func layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorBlack
 
 		for k, _ := range reposPerLang {
+			if len(firstKey) == 0 {
+				firstKey = k
+			}
 			fmt.Fprintln(v, k)
 		}
 	}
+
 	if v, err := g.SetView("main", int(0.2*float32(maxX)), -1, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -138,7 +178,7 @@ func layout(g *gocui.Gui) error {
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
 
-		for _, r := range reposPerLang["all"] {
+		for _, r := range reposPerLang[firstKey] {
 			fmt.Fprintln(v, "["+r.name+"] "+r.desc)
 		}
 	}
