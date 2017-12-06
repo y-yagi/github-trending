@@ -219,6 +219,10 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	cx, cy := v.Cursor()
+	lineCount := len(strings.Split(v.ViewBuffer(), "\n"))
+	if cy+1 == lineCount-2 {
+		return nil
+	}
 	if err := v.SetCursor(cx, cy+1); err != nil {
 		ox, oy := v.Origin()
 		if err := v.SetOrigin(ox, oy+1); err != nil {
