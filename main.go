@@ -155,7 +155,7 @@ func layout(g *gocui.Gui) error {
 	var firstKey string
 
 	maxX, maxY := g.Size()
-	if v, err := g.SetView("side", -1, -1, int(0.2*float32(maxX)), maxY); err != nil {
+	if v, err := g.SetView("side", -1, 0, int(0.2*float32(maxX)), maxY); err != nil {
 		v.Title = "Language"
 		v.Highlight = true
 		v.SelBgColor = gocui.ColorBlue
@@ -169,7 +169,7 @@ func layout(g *gocui.Gui) error {
 		}
 	}
 
-	if v, err := g.SetView("main", int(0.2*float32(maxX)), -1, maxX, maxY); err != nil {
+	if v, err := g.SetView("main", int(0.2*float32(maxX)), 0, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
