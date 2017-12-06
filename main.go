@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -19,7 +20,7 @@ type repository struct {
 	desc string
 }
 
-var repos []repository
+var reposPerLang map[string][]repository = map[string][]repository{}
 
 func main() {
 	os.Exit(run(os.Args, os.Stdout, os.Stderr))
@@ -74,6 +75,12 @@ func fetchTrending(language string) error {
 	}
 
 	var repo repository
+	var repos []repository
+
+	key := language
+	if len(key) == 0 {
+		key = "all"
+	}
 
 	doc.Find("ol.repo-list li").Each(func(i int, s *goquery.Selection) {
 		name := strings.TrimSpace(s.Find("h3").Text())
@@ -82,6 +89,8 @@ func fetchTrending(language string) error {
 		repo.lang = s.Find("[itemprop=programmingLanguage]").Text()
 		repos = append(repos, repo)
 	})
+
+	reposPerLang[key] = repos
 
 	return nil
 }
@@ -92,6 +101,12 @@ func keybindings(g *gocui.Gui) error {
 	}
 	if err := g.SetKeybinding("", gocui.KeyArrowUp, gocui.ModNone, cursorUp); err != nil {
 		return err
+	}
+	if err := g.SetKeybinding("", gocui.KeyArrowLeft, gocui.ModNone, cursorLeft); err != nil {
+		log.Panicln(err)
+	}
+	if err := g.SetKeybinding("", gocui.KeyArrowRight, gocui.ModNone, cursorRight); err != nil {
+		log.Panicln(err)
 	}
 	if err := g.SetKeybinding("", gocui.KeyEnter, gocui.ModNone, open); err != nil {
 		return err
@@ -104,6 +119,16 @@ func keybindings(g *gocui.Gui) error {
 
 func layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
+	if v, err := g.SetView("side", -1, -1, int(0.2*float32(maxX)), maxY); err != nil {
+		v.Title = "Language"
+		v.Highlight = true
+		v.SelBgColor = gocui.ColorBlue
+		v.SelFgColor = gocui.ColorBlack
+
+		for k, _ := range reposPerLang {
+			fmt.Fprintln(v, k)
+		}
+	}
 	if v, err := g.SetView("main", int(0.2*float32(maxX)), -1, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
@@ -113,7 +138,7 @@ func layout(g *gocui.Gui) error {
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
 
-		for _, r := range repos {
+		for _, r := range reposPerLang["all"] {
 			fmt.Fprintln(v, "["+r.name+"] "+r.desc)
 		}
 	}
@@ -129,7 +154,9 @@ func open(g *gocui.Gui, v *gocui.View) error {
 	var err error
 
 	if v == nil {
-		v = g.Views()[0]
+		if v, err = g.SetCurrentView("main"); err != nil {
+			return err
+		}
 	}
 
 	_, cy := v.Cursor()
@@ -143,8 +170,12 @@ func open(g *gocui.Gui, v *gocui.View) error {
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
+	var err error
+
 	if v == nil {
-		v = g.Views()[0]
+		if v, err = g.SetCurrentView("main"); err != nil {
+			return err
+		}
 	}
 
 	cx, cy := v.Cursor()
@@ -154,12 +185,21 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
+
+	if v.Name() == "side" {
+		refreshMainView(g, v)
+	}
+
 	return nil
 }
 
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
+	var err error
+
 	if v == nil {
-		v = g.Views()[0]
+		if v, err = g.SetCurrentView("main"); err != nil {
+			return err
+		}
 	}
 
 	ox, oy := v.Origin()
@@ -167,6 +207,64 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	if err := v.SetCursor(cx, cy-1); err != nil && oy > 0 {
 		if err := v.SetOrigin(ox, oy-1); err != nil {
 			return err
+		}
+	}
+
+	if v.Name() == "side" {
+		refreshMainView(g, v)
+	}
+
+	return nil
+}
+
+func cursorLeft(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	if v, err = g.SetCurrentView("side"); err != nil {
+		return err
+	}
+
+	cx, cy := v.Cursor()
+	if err := v.SetCursor(cx, cy); err != nil {
+		ox, oy := v.Origin()
+		if err := v.SetOrigin(ox, oy); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func cursorRight(g *gocui.Gui, v *gocui.View) error {
+	var err error
+	if v, err = g.SetCurrentView("main"); err != nil {
+		fmt.Printf("%v\n", err)
+		return err
+	}
+
+	cx, cy := v.Cursor()
+	if err := v.SetCursor(cx, cy); err != nil {
+		ox, oy := v.Origin()
+		if err := v.SetOrigin(ox, oy); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func refreshMainView(g *gocui.Gui, v *gocui.View) error {
+	var l string
+	var err error
+
+	mainView, _ := g.View("main")
+	_, cy := v.Cursor()
+
+	if l, err = v.Line(cy); err != nil {
+		l = ""
+	}
+
+	if len(l) != 0 {
+		mainView.Clear()
+		for _, r := range reposPerLang[l] {
+			fmt.Fprintln(mainView, "["+r.name+"] "+r.desc)
 		}
 	}
 	return nil
