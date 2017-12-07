@@ -8,16 +8,19 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/jroimartin/gocui"
 	"github.com/y-yagi/configure"
+	"github.com/y-yagi/goext/osext"
 )
 
 type config struct {
 	Languages []string `toml:"languages"`
+	Browser   string   `toml:"browser"`
 }
 
 type repository struct {
@@ -27,22 +30,32 @@ type repository struct {
 }
 
 var reposPerLang map[string][]repository = map[string][]repository{}
+var cfg config
+
+const appName = "github-trending"
+
+func init() {
+	f := filepath.Join(configure.ConfigDir(appName), "config.toml")
+	if !osext.IsExist(f) {
+		c := config{Languages: []string{"all"}, Browser: "google-chrome"}
+		configure.Save(appName, c)
+	}
+}
 
 func main() {
 	os.Exit(run(os.Args, os.Stdout, os.Stderr))
 }
 
 func run(args []string, outStream, errStream io.Writer) (exitCode int) {
-	var cfg config
 	var editConfig bool
 	exitCode = 0
 
-	flags := flag.NewFlagSet("github-trending", flag.ExitOnError)
+	flags := flag.NewFlagSet(appName, flag.ExitOnError)
 	flags.SetOutput(errStream)
 	flags.BoolVar(&editConfig, "c", false, "configure")
 	flags.Parse(args[1:])
 
-	err := configure.Load("github-trending", &cfg)
+	err := configure.Load(appName, &cfg)
 	if err != nil {
 		fmt.Fprintf(errStream, "%v\n", err)
 		exitCode = 1
@@ -55,7 +68,7 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 			editor = "vim"
 		}
 
-		if err := configure.Edit("github-trending", editor); err != nil {
+		if err := configure.Edit(appName, editor); err != nil {
 			fmt.Fprintf(outStream, "%v\n", err)
 			exitCode = 1
 			return
@@ -65,7 +78,8 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	}
 
 	if len(cfg.Languages) == 0 {
-		cfg.Languages = append(cfg.Languages, "")
+		fmt.Fprintf(outStream, "Languages are not specified.\n", err)
+		return
 	}
 
 	var wg sync.WaitGroup
@@ -103,9 +117,13 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 
 func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 	defer wg.Done()
+	u := "https://github.com/trending/"
 
-	url := "https://github.com/trending/" + url.QueryEscape(language)
-	doc, err := goquery.NewDocument(url)
+	if language != "all" {
+		u += url.QueryEscape(language)
+	}
+
+	doc, err := goquery.NewDocument(u)
 	if err != nil {
 		fmt.Fprintf(errStream, "%v\n", err)
 		return
@@ -113,11 +131,6 @@ func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 
 	var repo repository
 	var repos []repository
-
-	key := language
-	if len(key) == 0 {
-		key = "all"
-	}
 
 	doc.Find("ol.repo-list li").Each(func(i int, s *goquery.Selection) {
 		name := strings.TrimSpace(s.Find("h3").Text())
@@ -127,7 +140,7 @@ func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 		repos = append(repos, repo)
 	})
 
-	reposPerLang[key] = repos
+	reposPerLang[language] = repos
 
 	return
 }
@@ -221,7 +234,7 @@ func open(g *gocui.Gui, v *gocui.View) error {
 
 	repo := strings.TrimLeft(strings.Split(l, "]")[0], "[")
 	url := "https://github.com/" + repo
-	return exec.Command("google-chrome", url).Run()
+	return exec.Command(cfg.Browser, url).Run()
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
