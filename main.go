@@ -29,7 +29,7 @@ type repository struct {
 	desc string
 }
 
-var reposPerLang map[string][]repository = map[string][]repository{}
+var reposPerLang = map[string][]repository{}
 var cfg config
 
 const appName = "github-trending"
@@ -189,7 +189,7 @@ func layout(g *gocui.Gui) error {
 		v.SelBgColor = gocui.ColorBlue
 		v.SelFgColor = gocui.ColorBlack
 
-		for k, _ := range reposPerLang {
+		for k := range reposPerLang {
 			if len(firstKey) == 0 {
 				firstKey = k
 			}
