@@ -25,7 +25,6 @@ type config struct {
 
 type repository struct {
 	name string
-	lang string
 	desc string
 }
 
@@ -136,7 +135,6 @@ func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 		name := strings.TrimSpace(s.Find("h3").Text())
 		repo.name = strings.Replace(name, " ", "", -1)
 		repo.desc = strings.TrimSpace(s.Find(".py-1").Text())
-		repo.lang = s.Find("[itemprop=programmingLanguage]").Text()
 		repos = append(repos, repo)
 	})
 
