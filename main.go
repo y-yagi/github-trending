@@ -46,12 +46,12 @@ func main() {
 }
 
 func run(args []string, outStream, errStream io.Writer) (exitCode int) {
-	var editConfig bool
+	var configureFlag bool
 	exitCode = 0
 
 	flags := flag.NewFlagSet(appName, flag.ExitOnError)
 	flags.SetOutput(errStream)
-	flags.BoolVar(&editConfig, "c", false, "configure")
+	flags.BoolVar(&configureFlag, "c", false, "configure")
 	flags.Parse(args[1:])
 
 	err := configure.Load(appName, &cfg)
@@ -61,18 +61,11 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 		return
 	}
 
-	if editConfig {
-		editor := os.Getenv("EDITOR")
-		if len(editor) == 0 {
-			editor = "vim"
-		}
-
-		if err := configure.Edit(appName, editor); err != nil {
+	if configureFlag {
+		if err = editConfig(); err != nil {
 			fmt.Fprintf(outStream, "%v\n", err)
 			exitCode = 1
-			return
 		}
-
 		return
 	}
 
@@ -112,6 +105,19 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	}
 
 	return
+}
+
+func editConfig() error {
+	editor := os.Getenv("EDITOR")
+	if len(editor) == 0 {
+		editor = "vim"
+	}
+
+	if err := configure.Edit(appName, editor); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
