@@ -20,10 +20,10 @@
   revision = "349dd0209470eabd9514242c688c403c0926d266"
 
 [[projects]]
+  branch = "master"
   name = "github.com/jroimartin/gocui"
   packages = ["."]
-  revision = "4e9ce9a8e26f2ef33dfe297dbdfca148733b6b9b"
-  version = "v0.3.0"
+  revision = "4f518eddb04b8f73870836b6d1941e8aa3c06637"
 
 [[projects]]
   name = "github.com/mattn/go-runewidth"
@@ -58,6 +58,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1b0a054933d86437a934101628c651222f1d3c21bfadfb42dbde7cb61aab01f4"
+  inputs-digest = "0f98a41bebbfbbfd01522089b891aaedb4f37a446d375e808639bf7705e61026"
   solver-name = "gps-cdcl"
   solver-version = 1
