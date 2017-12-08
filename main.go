@@ -113,11 +113,7 @@ func editConfig() error {
 		editor = "vim"
 	}
 
-	if err := configure.Edit(appName, editor); err != nil {
-		return err
-	}
-
-	return nil
+	return configure.Edit(appName, editor)
 }
 
 func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
@@ -177,10 +173,8 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", 'h', gocui.ModNone, cursorLeft); err != nil {
 		return err
 	}
-	if err := g.SetKeybinding("", 'l', gocui.ModNone, cursorRight); err != nil {
-		return err
-	}
-	return nil
+
+	return g.SetKeybinding("", 'l', gocui.ModNone, cursorRight)
 }
 
 func layout(g *gocui.Gui) error {
