@@ -70,7 +70,7 @@ func run(args []string, outStream, errStream io.Writer) (exitCode int) {
 	}
 
 	if len(cfg.Languages) == 0 {
-		fmt.Fprintf(outStream, "Please specify Languages.\n", err)
+		fmt.Fprintln(outStream, "Please specify Languages.")
 		return
 	}
 
