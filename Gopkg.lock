@@ -21,6 +21,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/golang/lint"
+  packages = [".","golint"]
+  revision = "6aaf7c34af0f4c36a57e0c429bace4d706d8e931"
+
+[[projects]]
+  branch = "master"
   name = "github.com/jroimartin/gocui"
   packages = ["."]
   revision = "4f518eddb04b8f73870836b6d1941e8aa3c06637"
@@ -55,9 +61,15 @@
   packages = ["html","html/atom"]
   revision = "dc871a5d77e227f5bbf6545176ef3eeebf87e76e"
 
+[[projects]]
+  branch = "master"
+  name = "golang.org/x/tools"
+  packages = ["go/gcexportdata","go/gcimporter15","go/types/typeutil"]
+  revision = "64890f4e2b733655fee5077a5435a8812404c3a3"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "0f98a41bebbfbbfd01522089b891aaedb4f37a446d375e808639bf7705e61026"
+  inputs-digest = "6acb746abe8d1250484f0ca2ddf8bc71846f972dc7aab8a4f0528de6bef5e6cb"
   solver-name = "gps-cdcl"
   solver-version = 1
