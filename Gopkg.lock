@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/PuerkitoBio/goquery"
   packages = ["."]
-  revision = "e1271ee34c6a305e38566ecd27ae374944907ee9"
-  version = "v1.1.0"
+  revision = "a41cf096e64e3752d7683898d5746bc0b98ee213"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -22,8 +22,11 @@
 [[projects]]
   branch = "master"
   name = "github.com/golang/lint"
-  packages = [".","golint"]
-  revision = "6aaf7c34af0f4c36a57e0c429bace4d706d8e931"
+  packages = [
+    ".",
+    "golint"
+  ]
+  revision = "e14d9b0f1d332b1420c1ffa32562ad2dc84d645d"
 
 [[projects]]
   branch = "master"
@@ -41,7 +44,7 @@
   branch = "master"
   name = "github.com/nsf/termbox-go"
   packages = ["."]
-  revision = "aa4a75b1c20a2b03751b1a9f7e41d58bd6f71c43"
+  revision = "157ff97de075fe3e9e54bda782b8ca6b552dfff7"
 
 [[projects]]
   branch = "master"
@@ -53,19 +56,26 @@
   branch = "master"
   name = "github.com/y-yagi/goext"
   packages = ["osext"]
-  revision = "0c562708d18a124f202f8b4e7853a57943d9ee73"
+  revision = "fd0b1e87eb0981c2c24c15b6013e33ec203d8281"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["html","html/atom"]
-  revision = "dc871a5d77e227f5bbf6545176ef3eeebf87e76e"
+  packages = [
+    "html",
+    "html/atom"
+  ]
+  revision = "0ed95abb35c445290478a5348a7b38bb154135fd"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/tools"
-  packages = ["go/gcexportdata","go/gcimporter15","go/types/typeutil"]
-  revision = "64890f4e2b733655fee5077a5435a8812404c3a3"
+  packages = [
+    "go/gcexportdata",
+    "go/gcimporter15",
+    "go/types/typeutil"
+  ]
+  revision = "f86b507a7e91633e9ed99e4071f91a62e78f05f6"
 
 [solve-meta]
   analyzer-name = "dep"
