@@ -9,5 +9,4 @@ install:
   - go get -u github.com/golang/lint/golint
 
 script:
-  - env GO111MODULE=on go vet $(go list ./... | grep -vF /vendor/)
   - golint -set_exit_status $(go list ./... | grep -vF /vendor/)
