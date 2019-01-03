@@ -13,8 +13,8 @@ import (
 	"sync"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/jroimartin/gocui"
 	"github.com/y-yagi/configure"
+	"github.com/y-yagi/gocui"
 	"github.com/y-yagi/goext/osext"
 )
 
