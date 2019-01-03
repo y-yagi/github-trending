@@ -13,6 +13,8 @@ github.com/nsf/termbox-go v0.0.0-20180123065313-157ff97de075 h1:In3Bc2a5elacN6Ab
 github.com/nsf/termbox-go v0.0.0-20180123065313-157ff97de075/go.mod h1:IuKpRQcYE1Tfu+oAQqaLisqDeXgjyyltCfsaoYN18NQ=
 github.com/y-yagi/configure v0.0.0-20171207043757-4bee88f0d6ce h1:xnOuAqX0rVhLTV8k6qp/+emkafQsBdGEt53xphbpS7Y=
 github.com/y-yagi/configure v0.0.0-20171207043757-4bee88f0d6ce/go.mod h1:bmAvk0cHBukC1Sp+j8EgGsCPFnJyIZPqBhQjUtCXe6Q=
+github.com/y-yagi/gocui v0.3.0 h1:6Vqb9LigQP/5PteidAW1tGZgPJb7AfZpdkFr7Df0Lt0=
+github.com/y-yagi/gocui v0.3.0/go.mod h1:73qGA3jyr0tM8T9h5kXfa566yaBwytpImrv2qIHrkpM=
 github.com/y-yagi/goext v0.0.0-20180101053636-fd0b1e87eb09 h1:+OySUSDfvBA55pvVC1g5HHOf8mlYRnhek+QqRQPJpVg=
 github.com/y-yagi/goext v0.0.0-20180101053636-fd0b1e87eb09/go.mod h1:ny3voMiQkmfJ+v/ojY5N9aqzMC1Id3If0BtoVKA9AwQ=
 golang.org/x/net v0.0.0-20180124060956-0ed95abb35c4 h1:BLERX6fu5dNMZcaGP2RzbrDZpHQbDkAoG9oiTRXbWr0=
