@@ -133,10 +133,10 @@ func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 	var repo repository
 	var repos []repository
 
-	doc.Find("ol.repo-list li").Each(func(i int, s *goquery.Selection) {
-		name := strings.TrimSpace(s.Find("h3").Text())
+	doc.Find("article.Box-row").Each(func(i int, s *goquery.Selection) {
+		name := strings.TrimSpace(s.Find("h1").Text())
 		repo.name = strings.Replace(name, " ", "", -1)
-		repo.desc = strings.TrimSpace(s.Find(".py-1").Text())
+		repo.desc = strings.TrimSpace(s.Find("p.pr-4").Text())
 		repos = append(repos, repo)
 	})
 
