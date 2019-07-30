@@ -12,6 +12,8 @@ github.com/y-yagi/configure v0.0.0-20171207043757-4bee88f0d6ce h1:xnOuAqX0rVhLTV
 github.com/y-yagi/configure v0.0.0-20171207043757-4bee88f0d6ce/go.mod h1:bmAvk0cHBukC1Sp+j8EgGsCPFnJyIZPqBhQjUtCXe6Q=
 github.com/y-yagi/gocui v0.3.0 h1:6Vqb9LigQP/5PteidAW1tGZgPJb7AfZpdkFr7Df0Lt0=
 github.com/y-yagi/gocui v0.3.0/go.mod h1:73qGA3jyr0tM8T9h5kXfa566yaBwytpImrv2qIHrkpM=
+github.com/y-yagi/gocui v0.3.1-0.20190103014542-d471e40b7c72 h1:dMGih0kyPWYp0zLtqqiEeDwYVuBqMq/TzcFy/do9KkE=
+github.com/y-yagi/gocui v0.3.1-0.20190103014542-d471e40b7c72/go.mod h1:73qGA3jyr0tM8T9h5kXfa566yaBwytpImrv2qIHrkpM=
 github.com/y-yagi/goext v0.0.0-20180101053636-fd0b1e87eb09 h1:+OySUSDfvBA55pvVC1g5HHOf8mlYRnhek+QqRQPJpVg=
 github.com/y-yagi/goext v0.0.0-20180101053636-fd0b1e87eb09/go.mod h1:ny3voMiQkmfJ+v/ojY5N9aqzMC1Id3If0BtoVKA9AwQ=
 golang.org/x/net v0.0.0-20180124060956-0ed95abb35c4 h1:BLERX6fu5dNMZcaGP2RzbrDZpHQbDkAoG9oiTRXbWr0=
