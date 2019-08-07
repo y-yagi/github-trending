@@ -25,12 +25,15 @@ type config struct {
 }
 
 type repository struct {
-	name string
-	desc string
+	name     string
+	desc     string
+	language string
+	stars    string
 }
 
 var reposPerLang = map[string][]repository{}
 var cfg config
+var lang string
 
 const appName = "github-trending"
 
@@ -138,6 +141,8 @@ func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 		name := strings.TrimSpace(s.Find("h1").Text())
 		repo.name = strings.Replace(name, " ", "", -1)
 		repo.desc = strings.TrimSpace(s.Find("p.pr-4").Text())
+		repo.language = strings.TrimSpace(s.Find("span[itemprop='programmingLanguage']").Text())
+		repo.stars = strings.TrimSpace(s.Find("a.mr-3").First().Text())
 		repos = append(repos, repo)
 	})
 
@@ -182,7 +187,6 @@ func keybindings(g *gocui.Gui) error {
 }
 
 func layout(g *gocui.Gui) error {
-	var firstKey string
 
 	maxX, maxY := g.Size()
 	if v, err := g.SetView("side", -1, 0, int(0.2*float32(maxX)), maxY); err != nil {
@@ -192,14 +196,14 @@ func layout(g *gocui.Gui) error {
 		v.SelFgColor = gocui.ColorBlack
 
 		for k := range reposPerLang {
-			if len(firstKey) == 0 {
-				firstKey = k
+			if len(lang) == 0 {
+				lang = k
 			}
 			fmt.Fprintln(v, k)
 		}
 	}
 
-	if v, err := g.SetView("main", int(0.2*float32(maxX)), 0, maxX, maxY); err != nil {
+	if v, err := g.SetView("main", int(0.2*float32(maxX)), 0, maxX, int(0.8*float32(maxY))); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -208,9 +212,22 @@ func layout(g *gocui.Gui) error {
 		v.SelBgColor = gocui.ColorGreen
 		v.SelFgColor = gocui.ColorBlack
 
-		for _, r := range reposPerLang[firstKey] {
+		for _, r := range reposPerLang[lang] {
 			fmt.Fprintln(v, "["+r.name+"] "+r.desc)
 		}
+	}
+
+	// show some details
+	if v, err := g.SetView("details", int(0.2*float32(maxX)), int(0.8*float32(maxY)), maxX, maxY); err != nil {
+
+		if err != gocui.ErrUnknownView {
+			return err
+		}
+
+		v.Title = "Details"
+		v.Highlight = false
+		v.SelFgColor = gocui.ColorBlack
+		refreshDetailsView(g)
 	}
 	return nil
 }
@@ -285,11 +302,7 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 
-	if v.Name() == "side" {
-		refreshMainView(g, v)
-	}
-
-	return nil
+	return drawInfoViews(g, v)
 }
 
 func cursorUp(g *gocui.Gui, v *gocui.View) error {
@@ -308,11 +321,48 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
+	return drawInfoViews(g, v)
+}
+
+func drawInfoViews(g *gocui.Gui, v *gocui.View) error {
+	var err error
 
 	if v.Name() == "side" {
-		refreshMainView(g, v)
+		// set the language which is used in both main and details view
+		setLang(g, v)
+		if err = refreshMainView(g, v); err != nil {
+			return err
+		}
+
+		if err = refreshDetailsView(g); err != nil {
+			return err
+		}
+
 	}
 
+	if v.Name() == "main" {
+		if err = refreshDetailsView(g); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func setLang(g *gocui.Gui, v *gocui.View) error {
+
+	var l string
+	var err error
+
+	if v.Name() == "side" {
+		_, cy := v.Cursor()
+
+		if l, err = v.Line(cy); err != nil {
+			l = ""
+		}
+
+		lang = l
+	}
 	return nil
 }
 
@@ -346,6 +396,20 @@ func cursorRight(g *gocui.Gui, v *gocui.View) error {
 			return err
 		}
 	}
+	return refreshDetailsView(g)
+}
+
+func refreshDetailsView(g *gocui.Gui) error {
+	mainView, _ := g.View("main")
+	_, cy := mainView.Cursor()
+
+	detailsView, _ := g.View("details")
+	detailsView.Clear()
+
+	repo := reposPerLang[lang][cy]
+
+	fmt.Fprintf(detailsView, "%s %s\n", repo.language, repo.stars)
+	fmt.Fprintf(detailsView, "%s", repo.desc)
 	return nil
 }
 
