@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 
@@ -232,7 +233,32 @@ func open(g *gocui.Gui, v *gocui.View) error {
 
 	repo := strings.TrimLeft(strings.Split(l, "]")[0], "[")
 	url := "https://github.com/" + repo
-	return exec.Command(cfg.Browser, url).Run()
+	if err := exec.Command(cfg.Browser, url).Run(); err != nil {
+		if err := openByDefault(url); err != nil {
+			fmt.Printf("%v\n", err)
+			return err
+		}
+	}
+
+	return nil
+}
+
+func openByDefault(url string) error {
+	var cmd string
+	var args []string
+
+	switch runtime.GOOS {
+	case "windows":
+		cmd = "cmd"
+		args = []string{"/c", "start"}
+	case "darwin":
+		cmd = "open"
+	default:
+		cmd = "xdg-open"
+	}
+
+	args = append(args, url)
+	return exec.Command(cmd, args...).Start()
 }
 
 func cursorDown(g *gocui.Gui, v *gocui.View) error {
