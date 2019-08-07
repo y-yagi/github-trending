@@ -32,7 +32,12 @@ type repository struct {
 var reposPerLang = map[string][]repository{}
 var cfg config
 
-const appName = "github-trending"
+const (
+	mainView  = "main"
+	sideView  = "side"
+	appName   = "github-trending"
+	githubURL = "https://github.com/"
+)
 
 func init() {
 	f := filepath.Join(configure.ConfigDir(appName), "config.toml")
@@ -119,7 +124,7 @@ func editConfig() error {
 
 func fetchTrending(language string, errStream io.Writer, wg *sync.WaitGroup) {
 	defer wg.Done()
-	u := "https://github.com/trending/"
+	u := githubURL + "trending/"
 
 	if language != "all" {
 		u += url.QueryEscape(language)
@@ -185,7 +190,7 @@ func layout(g *gocui.Gui) error {
 	var firstKey string
 
 	maxX, maxY := g.Size()
-	if v, err := g.SetView("side", -1, 0, int(0.2*float32(maxX)), maxY); err != nil {
+	if v, err := g.SetView(sideView, -1, 0, int(0.2*float32(maxX)), maxY); err != nil {
 		v.Title = "Language"
 		v.Highlight = true
 		v.SelBgColor = gocui.ColorBlue
@@ -199,7 +204,7 @@ func layout(g *gocui.Gui) error {
 		}
 	}
 
-	if v, err := g.SetView("main", int(0.2*float32(maxX)), 0, maxX, maxY); err != nil {
+	if v, err := g.SetView(mainView, int(0.2*float32(maxX)), 0, maxX, maxY); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
 		}
@@ -224,7 +229,7 @@ func open(g *gocui.Gui, v *gocui.View) error {
 	var err error
 
 	if v == nil {
-		if v, err = g.SetCurrentView("main"); err != nil {
+		if v, err = g.SetCurrentView(mainView); err != nil {
 			return err
 		}
 	}
@@ -235,7 +240,7 @@ func open(g *gocui.Gui, v *gocui.View) error {
 	}
 
 	repo := strings.TrimLeft(strings.Split(l, "]")[0], "[")
-	url := "https://github.com/" + repo
+	url := githubURL + repo
 	if err := exec.Command(cfg.Browser, url).Run(); err != nil {
 		if err := openByDefault(url); err != nil {
 			fmt.Printf("%v\n", err)
@@ -268,7 +273,7 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 	var err error
 
 	if v == nil {
-		if v, err = g.SetCurrentView("main"); err != nil {
+		if v, err = g.SetCurrentView(mainView); err != nil {
 			return err
 		}
 	}
@@ -285,7 +290,7 @@ func cursorDown(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 
-	if v.Name() == "side" {
+	if v.Name() == sideView {
 		refreshMainView(g, v)
 	}
 
@@ -296,7 +301,7 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 	var err error
 
 	if v == nil {
-		if v, err = g.SetCurrentView("main"); err != nil {
+		if v, err = g.SetCurrentView(mainView); err != nil {
 			return err
 		}
 	}
@@ -309,7 +314,7 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 
-	if v.Name() == "side" {
+	if v.Name() == sideView {
 		refreshMainView(g, v)
 	}
 
@@ -318,7 +323,7 @@ func cursorUp(g *gocui.Gui, v *gocui.View) error {
 
 func cursorLeft(g *gocui.Gui, v *gocui.View) error {
 	var err error
-	if v, err = g.SetCurrentView("side"); err != nil {
+	if v, err = g.SetCurrentView(sideView); err != nil {
 		return err
 	}
 
@@ -334,7 +339,7 @@ func cursorLeft(g *gocui.Gui, v *gocui.View) error {
 
 func cursorRight(g *gocui.Gui, v *gocui.View) error {
 	var err error
-	if v, err = g.SetCurrentView("main"); err != nil {
+	if v, err = g.SetCurrentView(mainView); err != nil {
 		fmt.Printf("%v\n", err)
 		return err
 	}
@@ -353,7 +358,7 @@ func refreshMainView(g *gocui.Gui, v *gocui.View) error {
 	var l string
 	var err error
 
-	mainView, _ := g.View("main")
+	mainView, _ := g.View(mainView)
 	_, cy := v.Cursor()
 
 	if l, err = v.Line(cy); err != nil {
