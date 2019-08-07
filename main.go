@@ -173,6 +173,9 @@ func keybindings(g *gocui.Gui) error {
 	if err := g.SetKeybinding("", 'h', gocui.ModNone, cursorLeft); err != nil {
 		return err
 	}
+	if err := g.SetKeybinding("", 'q', gocui.ModNone, quit); err != nil {
+		return err
+	}
 
 	return g.SetKeybinding("", 'l', gocui.ModNone, cursorRight)
 }
