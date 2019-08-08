@@ -227,6 +227,7 @@ func layout(g *gocui.Gui) error {
 		v.Title = "Details"
 		v.Highlight = false
 		v.SelFgColor = gocui.ColorBlack
+		v.Wrap = true
 		refreshDetailsView(g)
 	}
 	return nil
@@ -408,7 +409,7 @@ func refreshDetailsView(g *gocui.Gui) error {
 
 	repo := reposPerLang[lang][cy]
 
-	fmt.Fprintf(detailsView, "%s %s\n", repo.language, repo.stars)
+	fmt.Fprintf(detailsView, "%s 🌟%s\n", repo.language, repo.stars)
 	fmt.Fprintf(detailsView, "%s", repo.desc)
 	return nil
 }
