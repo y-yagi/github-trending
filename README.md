@@ -2,7 +2,7 @@
 
 This is tool for seeing GitHub Trending.
 
-[![asciicast](https://asciinema.org/a/aRVVXUVQk3unOHfmdSdVLmh1j.png)](https://asciinema.org/a/aRVVXUVQk3unOHfmdSdVLmh1j)
+[![asciicast](https://asciinema.org/a/dFvUBJmEvrJPXofh2laOHfqsV.svg)](https://asciinema.org/a/dFvUBJmEvrJPXofh2laOHfqsV)
 
 ## Usage
 
